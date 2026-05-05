@@ -1,0 +1,40 @@
+version: "3.9"
+
+networks:
+  devops_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+services:
+  frontend:
+    image: nginx:alpine
+    container_name: frontend_container
+    ports:
+      - "8080:80"
+    networks:
+      - devops_net
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ../01_Dockerfile_Basics
+      dockerfile: Dockerfile
+    container_name: backend_container
+    expose:
+      - "5000"
+    networks:
+      - devops_net
+    environment:
+      - APP_VERSION=1.0
+      - PORT=5000
+    volumes:
+      - app_data:/app/data
+
+volumes:
+  app_data:
+    driver: local

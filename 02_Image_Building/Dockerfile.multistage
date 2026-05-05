@@ -1,0 +1,30 @@
+
+# ─────────────────────────────────────────────────────
+FROM python:3.11 AS builder
+
+WORKDIR /build
+
+COPY requirements.txt .
+
+# Install dependencies into a separate directory
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# ─────────────────────────────────────────────────────
+# Stage 2: Final lightweight image
+# ─────────────────────────────────────────────────────
+FROM python:3.11-slim AS final
+
+WORKDIR /app
+
+# Copy only installed packages from builder stage
+COPY --from=builder /install /usr/local
+
+# Copy application code
+COPY app/ .
+
+EXPOSE 5000
+
+ENV APP_VERSION=2.0
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "app.py"]
